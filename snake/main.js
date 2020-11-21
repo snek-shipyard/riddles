@@ -1,6 +1,14 @@
+const D_RIGHT = "ArrowRight";
+const D_LEFT = "ArrowLeft";
+const D_UP = "ArrowUp";
+const D_DOWN = "ArrowDown";
 const cvs = document.getElementById("playground");
 const ctx = cvs.getContext("2d");
-console.log(ctx);
+const headImage = new Image(50, 50);
+headImage.src = "assets/snake_head.webp";
+
+const bodyImage = new Image();
+bodyImage.src = "assets/body_image.gif";
 
 class SnakeSegment {
   constructor(x, y) {
@@ -10,44 +18,62 @@ class SnakeSegment {
 }
 
 class Snake {
-  constructor(x, y) {
-    this.head = new SnakeSegment(x, y);
-    this.body = [];
-    this.activeKey = 37;
+  constructor(x, y, interval = 10) {
+    this.body = [new SnakeSegment(x, y)];
+    this.activeKey = D_RIGHT;
+    this.interval = interval;
   }
 
-  move(event) {
-    const key = event.keyCode;
-    console.log(this.activeKey, key);
+  handleKey(key) {
     if (this.activeKey !== key) {
-      console.log("emma");
-
-      this.activeKey = 41;
-      switch (key) {
-        case 37: //right
-          this.activeKey = 37;
-          break;
-
-        case 38: //down
-          this.activeKey = 38;
-          break;
-
-        case 39: //left
-          this.activeKey = 39;
-          break;
-
-        case 40: //up
-          this.activeKey = 40;
-          break;
-      }
+      if (key === D_RIGHT && this.activeKey !== D_LEFT)
+        this.activeKey = D_RIGHT;
+      if (key === D_LEFT && this.activeKey !== D_RIGHT) this.activeKey = D_LEFT;
+      if (key === D_UP && this.activeKey !== D_DOWN) this.activeKey = D_UP;
+      if (key === D_DOWN && this.activeKey !== D_UP) this.activeKey = D_DOWN;
     }
+
+    if (key === "a")
+      this.body.unshift(new SnakeSegment(this.body[0].x, this.body[0].y));
   }
 }
-const snake = new Snake(30, 30);
-document.addEventListener("keydown", snake.move);
+
+const snake = new Snake(120, 30);
+document.addEventListener("keydown", (event) => {
+  snake.handleKey(event.key);
+});
 
 function draw() {
-  console.log("SnakeDirection", JSON.stringify(snake.activeKey));
+  ctx.clearRect(0, 0, cvs.width, cvs.height);
+
+  for (let i = 1; i < snake.body.length; i++) {
+    ctx.drawImage(bodyImage, snake.body[i].x, snake.body[i].y, 50, 50);
+  }
+
+  ctx.drawImage(headImage, snake.body[0].x, snake.body[0].y, 50, 50);
+
+  //draw:
+  let head = new SnakeSegment(snake.body[0].x, snake.body[0].y);
+
+  //move snake:
+  if (snake.activeKey === D_RIGHT) head.x += snake.interval;
+  if (snake.activeKey === D_LEFT) head.x -= snake.interval;
+  if (snake.activeKey === D_DOWN) head.y += snake.interval;
+  if (snake.activeKey === D_UP) head.y -= snake.interval;
+
+  if (head.x < 0) {
+    head.x = cvs.width - snake.interval;
+  } else if (head.x >= cvs.width) {
+    head.x = 0;
+  }
+  if (head.y < 0) {
+    head.y = cvs.height - snake.interval;
+  } else if (head.y >= cvs.height) {
+    head.y = 0;
+  }
+
+  snake.body.pop();
+  snake.body.unshift(head);
 }
 
-setInterval(draw, 1000);
+setInterval(draw, 100);
