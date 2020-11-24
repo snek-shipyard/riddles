@@ -10,6 +10,9 @@ headImage.src = "assets/snake_head.webp";
 const bodyImage = new Image();
 bodyImage.src = "assets/body_image.gif";
 
+const pizzaImage = new Image();
+pizzaImage.src = "assets/pizza.png";
+
 class SnakeSegment {
   constructor(x, y) {
     this.x = x;
@@ -18,7 +21,7 @@ class SnakeSegment {
 }
 
 class Snake {
-  constructor(x, y, interval = 10) {
+  constructor(x, y, interval = 30) {
     this.body = [new SnakeSegment(x, y)];
     this.activeKey = D_RIGHT;
     this.interval = interval;
@@ -38,10 +41,45 @@ class Snake {
   }
 }
 
+class Pizza {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+}
+
 const snake = new Snake(120, 30);
 document.addEventListener("keydown", (event) => {
   snake.handleKey(event.key);
 });
+
+let food = spawnFood();
+
+function randomIntegerBetween(minimum, maximum) {
+  return Math.floor(Math.random() * (maximum - minimum + 1)) + minimum;
+}
+
+
+function spawnFood() {
+  return new Pizza(
+    randomIntegerBetween(50, cvs.width - 50),
+    randomIntegerBetween(50, cvs.height - 50)
+  );
+}
+
+function checkCollision(obj, arr) {
+  console.log(arr.length);
+  if(arr.length === 1) return false;
+  return arr.some(
+    (e) => obj.x === e.x && obj.y === e.y
+  );
+}
+
+
+
+
+
+
 
 function draw() {
   ctx.clearRect(0, 0, cvs.width, cvs.height);
@@ -51,6 +89,7 @@ function draw() {
   }
 
   ctx.drawImage(headImage, snake.body[0].x, snake.body[0].y, 50, 50);
+  ctx.drawImage(pizzaImage, food.x, food.y, 50, 50);
 
   //draw:
   let head = new SnakeSegment(snake.body[0].x, snake.body[0].y);
@@ -72,8 +111,24 @@ function draw() {
     head.y = 0;
   }
 
-  snake.body.pop();
+
+  if (Math.abs(head.x - food.x) <= 30 && Math.abs(head.y - food.y) <= 30) {
+    food = spawnFood();
+  } else {
+    snake.body.pop();
+  }
+
+
+  console.log(snake.body);
+  let check = checkCollision(head, snake.body);
+  if (check === true) {
+    window.close();
+  }
+
   snake.body.unshift(head);
+
+
 }
 
-setInterval(draw, 100);
+
+setInterval(draw, 300);

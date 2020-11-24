@@ -1,6 +1,11 @@
+html{
+    background-color: #fda3e2;
+}
+
+
 canvas{
     display: block;
     margin: 0 auto;
-    background-color: #fda3e2;
+    background-color: #ffffff;
 }
 
